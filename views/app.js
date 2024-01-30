@@ -1,11 +1,19 @@
 const express = require("express");
 const app = express();
+const { makeDBConnectionPool } = require("./dbHelp");
+const pool = makeDBConnectionPool("omdb");
 app.listen(3000);
 
 app.set("view engine", "ejs");
 
 app.get("/", (req, res) => {
   res.render("index");
+});
+
+app.get("/movies", async (req, res) => {
+  const lotr = await mainTask();
+  console.log(`This is inside the app.get ${lotr}`);
+  res.render("movies", { lotr });
 });
 
 app.get("/about", (req, res) => {
@@ -61,3 +69,11 @@ const factions = [
     description: "Alien Swarm consuming all life for the Hive Mind.",
   },
 ];
+
+async function mainTask() {
+  const dbResult = await pool.query(
+    "select * from movies where name like '%Lord of the Rings:%' limit 3"
+  );
+  console.log(dbResult.rows);
+  return dbResult.rows;
+}
